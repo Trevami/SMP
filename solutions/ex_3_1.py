@@ -58,24 +58,24 @@ if __name__ == "__main__":
     # print(np.round(forces(x, m, g)[:,:,1], 3))
 
     # Calculate trajectories of planets
-    # trajectories = run(x, v, 10e-6, m, g).transpose()
+    trajectories = run(x, v, 10e-4, m, g).transpose()
 
     # print(v)
 
-    x1, v1 = step_euler(x, v, 10e-4, m, g, forces(x, m, g))
+    # x1, v1 = step_euler(x, v, 10e-4, m, g, forces(x, m, g))
 
-    x_new_expected = np.array([[0.00000000e+00, 1.00000000e+00, 1.00256267e+00, 1.52410000e+00, 7.23000000e-01, 5.20300000e+00],
-                            [0.00000000e+00, 6.28318531e-04, 6.49535585e-04, 5.23250598e-04, 7.40223744e-04, 2.75644293e-04]]).transpose()
+    # x_new_expected = np.array([[0.00000000e+00, 1.00000000e+00, 1.00256267e+00, 1.52410000e+00, 7.23000000e-01, 5.20300000e+00],
+    #                         [0.00000000e+00, 6.28318531e-04, 6.49535585e-04, 5.23250598e-04, 7.40223744e-04, 2.75644293e-04]]).transpose()
 
-    print(x1 - x_new_expected)
+    # print(x1 - x_new_expected)
 
-    # # Trajectories plot
-    # for i in range(np.shape(trajectories)[1]):
-    #     plt.plot(trajectories[0,i,:], trajectories[1,i,:], "-",
-    #              label=names[i].decode('UTF-8'))
-    # plt.xlabel(r"$x$ in au")
-    # plt.ylabel(r"$y$ in au")
-    # plt.legend(loc="lower right")
-    # plt.show()
+    # Trajectories plot
+    for i in range(np.shape(trajectories)[1]):
+        plt.plot(trajectories[0,i,:], trajectories[1,i,:], "-",
+                 label=names[i].decode('UTF-8'))
+    plt.xlabel(r"$x$ in au")
+    plt.ylabel(r"$y$ in au")
+    plt.legend(loc="lower right")
+    plt.show()
 
 
