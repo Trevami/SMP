@@ -45,8 +45,6 @@ def run(x, v, dt, masses, g):
     for step in range(int(1 / 10e-4)):
         F_mat = forces(x, masses, g)
         x, v = step_euler(x, v, dt, masses, g, F_mat)
-        # print(v[2])
-        # print(F_mat)
         trajectory.append(x.copy())
     return np.array(trajectory)
 
