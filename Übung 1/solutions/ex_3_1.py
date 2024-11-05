@@ -42,9 +42,11 @@ def step_euler(x, v, dt, masses, g, forces):
 
 def run(x, v, dt, masses, g):
     trajectory = [x.copy()]
-    for step in range(int(1 / 10e-4)):
+    for step in range(int(1 / dt)):
         F_mat = forces(x, masses, g)
         x, v = step_euler(x, v, dt, masses, g, F_mat)
+        # print(v[2])
+        # print(F_mat)
         trajectory.append(x.copy())
     return np.array(trajectory)
 
@@ -63,7 +65,7 @@ if __name__ == "__main__":
     v = np.array(v_init).transpose()
 
     # Calculate trajectories of planets
-    trajectories = run(x, v, 10e-4, m, g).transpose()
+    trajectories = run(x, v, 10e-5, m, g).transpose()
 
     # Trajectories plot
     for i in range(np.shape(trajectories)[1]):
