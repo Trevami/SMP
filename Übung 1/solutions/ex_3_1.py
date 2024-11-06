@@ -13,46 +13,43 @@ def force(x_ij, m_i, m_j, g):
 
 def forces(x, masses, g):
     dim = np.shape(x)
-    F_mat = np.zeros((dim[1], dim[0], dim[0]), dtype="float")
+    force_mat = np.zeros((dim[1], dim[0], dim[0]), dtype="float")
     for i in range(dim[0]):
         for j in range(dim[0]):
             if j < i:
                 force_xy = force(x[i] - x[j], masses[i], masses[j], g)
-                # Diagonal of matrix is 0 -> planet exhibits no force on itself
+                # Diagonal of matrix is 0
+                # -> planet exhibits no force on itself
                 # Lower diagonal half:
-                F_mat[0, i, j] = force_xy[0]  # Force x-components
-                F_mat[1, i, j] = force_xy[1]  # Force y-components
+                force_mat[0, i, j] = force_xy[0]  # Force x-components
+                force_mat[1, i, j] = force_xy[1]  # Force y-components
                 # Upper diagonal half (antisymmetric to upper):
-                F_mat[0, j, i] = -force_xy[0]  # Force x-components
-                F_mat[1, j, i] = -force_xy[1]  # Force y-components
-    return F_mat
+                force_mat[0, j, i] = -force_xy[0]  # Force x-components
+                force_mat[1, j, i] = -force_xy[1]  # Force y-components
+    return force_mat
 
 
 def step_euler(x, v, dt, masses, g, forces):
     for i in range(np.shape(x)[0]):
         x[i] = x[i] + v[i] * dt
-        v[i] = (
-            v[i]
-            + np.array([np.sum(forces[0, i, :]), np.sum(forces[1, i, :])])
-            / masses[i]
-            * dt
-        )
+        force_tot = np.array(
+            [np.sum(forces[0, i, :]), np.sum(forces[1, i, :])])
+        v[i] = v[i] + force_tot / masses[i] * dt
     return x, v
 
 
 def run(x, v, dt, masses, g):
     trajectory = [x.copy()]
-    for step in range(int(1 / dt)):
-        F_mat = forces(x, masses, g)
-        x, v = step_euler(x, v, dt, masses, g, F_mat)
-        # print(v[2])
-        # print(F_mat)
+    for time_step in range(int(1 / dt)):
+        force_mat = forces(x, masses, g)
+        x, v = step_euler(x, v, dt, masses, g, force_mat)
         trajectory.append(x.copy())
     return np.array(trajectory)
 
 
 if __name__ == "__main__":
-    data_path = Path(__file__).resolve().parent.parent / "files" / "solar_system.npz"
+    data_path = Path(__file__).resolve().parent.parent / \
+        "files/solar_system.npz"
     data = np.load(data_path)
     names = data["names"]
 
