@@ -26,7 +26,7 @@ def step_velocity_verlet(x, v, dt, masses, g, forces_old):
         accs_first[i] = (force_tot / masses[i])
         x[i] = x[i] + v[i] * dt + accs_first[i] / 2 * dt**2
 
-    # Second step of the velocity verle alogrihtm:
+    # Second step of the velocity verlet alogrihtm:
     # Calculates new forces from updatet postions of step 1
     # then uses old acc (step 1) and new accs form updated forces
     # to calculate the velocities
@@ -40,9 +40,10 @@ def step_velocity_verlet(x, v, dt, masses, g, forces_old):
     return x, v
 
 
-def run(x, v, dt, masses, g, step_method):
+def run(x, v, dt, duration, masses, g, step_method):
+    # Duration and time step is specified in years
     trajectory = [x.copy()]
-    for timestep in range(int(1 / (dt))):
+    for timestep in range(int(duration / (dt))):
         force_mat = ex_3_1.forces(x, masses, g)
         x, v = step_method(x, v, dt, masses, g, force_mat)
         trajectory.append(x.copy())
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     v = np.array(v_init).transpose()
 
     # Calculate trajectories of planets
-    trajectories = run(x, v, 10e-4, m, g, step_velocity_verlet).transpose()
+    trajectories = run(x, v, 10e-4, 1, m, g, step_velocity_verlet).transpose()
 
     # Trajectories plot
     for i in range(np.shape(trajectories)[1]):
