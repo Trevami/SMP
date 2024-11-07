@@ -40,9 +40,9 @@ if __name__ == "__main__":
         x.copy(), v.copy(), timestep, duration, m, g, ex_3_1.step_euler).transpose()
     dists_e_s_euler = get_dists_earth_sun(traject_euler)
 
-    traject_simpl_euler = ex_3_2.run(
+    traject_sympl_euler = ex_3_2.run(
         x.copy(), v.copy(), timestep, duration, m, g, ex_3_2.step_symplectic_euler).transpose()
-    dists_e_s_simp_euler = get_dists_earth_sun(traject_simpl_euler)
+    dists_e_s_simp_euler = get_dists_earth_sun(traject_sympl_euler)
 
     traject_vv = ex_3_2.run(
         x.copy(), v.copy(), timestep, duration, m, g, ex_3_2.step_velocity_verlet).transpose()
