@@ -32,8 +32,7 @@ def forces(x, masses, g):
 def step_euler(x, v, dt, masses, g, forces):
     for i in range(np.shape(x)[0]):
         x[i] = x[i] + v[i] * dt
-        force_tot = np.array(
-            [np.sum(forces[0, i, :]), np.sum(forces[1, i, :])])
+        force_tot = np.array([np.sum(forces[0, i, :]), np.sum(forces[1, i, :])])
         v[i] = v[i] + force_tot / masses[i] * dt
     return x, v
 
@@ -48,8 +47,7 @@ def run(x, v, dt, masses, g):
 
 
 if __name__ == "__main__":
-    data_path = Path(__file__).resolve().parent.parent / \
-        "files/solar_system.npz"
+    data_path = Path(__file__).resolve().parent.parent / "files/solar_system.npz"
     data = np.load(data_path)
     names = data["names"]
 

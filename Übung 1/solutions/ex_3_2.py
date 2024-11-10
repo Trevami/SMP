@@ -9,8 +9,7 @@ import ex_3_1
 def step_symplectic_euler(x, v, dt, masses, g, forces):
     # Changed pos. of x and v calculations compared to previous exercises
     for i in range(np.shape(x)[0]):
-        force_tot = np.array(
-            [np.sum(forces[0, i, :]), np.sum(forces[1, i, :])])
+        force_tot = np.array([np.sum(forces[0, i, :]), np.sum(forces[1, i, :])])
         v[i] = v[i] + force_tot / masses[i] * dt
         x[i] = x[i] + v[i] * dt
     return x, v
@@ -21,9 +20,8 @@ def step_velocity_verlet(x, v, dt, masses, g, forces_old):
     # Calculates new pos. with accelerations (accs) form given forces
     accs_first = np.zeros(np.shape(x))
     for i in range(np.shape(x)[0]):
-        force_tot = np.array(
-            [np.sum(forces_old[0, i, :]), np.sum(forces_old[1, i, :])])
-        accs_first[i] = (force_tot / masses[i])
+        force_tot = np.array([np.sum(forces_old[0, i, :]), np.sum(forces_old[1, i, :])])
+        accs_first[i] = force_tot / masses[i]
         x[i] = x[i] + v[i] * dt + accs_first[i] / 2 * dt**2
 
     # Second step of the velocity verlet alogrihtm:
@@ -34,8 +32,9 @@ def step_velocity_verlet(x, v, dt, masses, g, forces_old):
     accs_second = np.zeros(np.shape(x))
     for i in range(np.shape(x)[0]):
         force_tot = np.array(
-            [np.sum(forces_updated[0, i, :]), np.sum(forces_updated[1, i, :])])
-        accs_second[i] = (force_tot / masses[i])
+            [np.sum(forces_updated[0, i, :]), np.sum(forces_updated[1, i, :])]
+        )
+        accs_second[i] = force_tot / masses[i]
         v[i] = v[i] + (accs_first[i] + accs_second[i]) * dt / 2
     return x, v
 
@@ -51,8 +50,7 @@ def run(x, v, dt, duration, masses, g, step_method):
 
 
 if __name__ == "__main__":
-    data_path = Path(__file__).resolve().parent.parent / \
-        "files/solar_system.npz"
+    data_path = Path(__file__).resolve().parent.parent / "files/solar_system.npz"
     data = np.load(data_path)
     names = data["names"]
 
@@ -65,16 +63,28 @@ if __name__ == "__main__":
     v = np.array(v_init).transpose()
 
     # Calculate trajectories of planets
-    trajectories = run(x, v, 10e-4, 1, m, g, step_velocity_verlet).transpose()
+    trajectories = run(x, v, 10e-2, 20, m, g, step_velocity_verlet).transpose()
+
+    # # Trajectories plot
+    # for i in range(np.shape(trajectories)[1]):
+    #     plt.plot(
+    #         trajectories[0, i, :],
+    #         trajectories[1, i, :],
+    #         "-",
+    #         label=names[i].decode("UTF-8"),
+    #     )
+    # plt.xlabel(r"$x$ in au")
+    # plt.ylabel(r"$y$ in au")
+    # plt.legend(loc="lower right")
+    # plt.show()
 
     # Trajectories plot
-    for i in range(np.shape(trajectories)[1]):
-        plt.plot(
-            trajectories[0, i, :],
-            trajectories[1, i, :],
-            "-",
-            label=names[i].decode("UTF-8"),
-        )
+    plt.plot(
+        trajectories[0, 2, :] - trajectories[0, 1, :],
+        trajectories[1, 2, :] - trajectories[1, 1, :],
+        "-",
+        label="moon compared to earth",
+    )
     plt.xlabel(r"$x$ in au")
     plt.ylabel(r"$y$ in au")
     plt.legend(loc="lower right")
