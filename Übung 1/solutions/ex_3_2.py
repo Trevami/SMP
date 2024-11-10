@@ -2,7 +2,9 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+
 from pathlib import Path
+
 import ex_3_1
 
 
@@ -41,13 +43,24 @@ def step_velocity_verlet(x, v, dt, masses, g, forces_old):
 
 
 def run(x, v, dt, duration, masses, g, step_method):
-    # Duration and time step is specified in years
-    trajectory = [x.copy()]
+    # Duration and time step are specified in years
+    x_new = x.copy()
+    v_new = v.copy()
+    trajectory = [x_new.copy()]
     for timestep in range(int(duration / (dt))):
-        force_mat = ex_3_1.forces(x, masses, g)
-        x, v = step_method(x, v, dt, masses, g, force_mat)
-        trajectory.append(x.copy())
+        force_mat = ex_3_1.forces(x_new, masses, g)
+        x_new, v_new = step_method(x_new, v_new, dt, masses, g, force_mat)
+        trajectory.append(x_new.copy())
     return np.array(trajectory)
+
+
+def calc_moon_to_earth(trajectories):
+    # Calculates the trajectory of the moon compared to earth
+    trat_moon_to_earth = []
+    for timestep in range(np.shape(trajectories)[2]):
+        trat_moon_to_earth.append(
+            trajectories[:, 2, timestep] - trajectories[:, 1, timestep])
+    return np.array(trat_moon_to_earth)
 
 
 if __name__ == "__main__":
@@ -64,18 +77,50 @@ if __name__ == "__main__":
     x = np.array(x_init).transpose()
     v = np.array(v_init).transpose()
 
-    # Calculate trajectories of planets
-    trajectories = run(x, v, 10e-4, 1, m, g, step_velocity_verlet).transpose()
+    plot_path = Path(__file__).resolve().parent.parent/"plots"
+    # Trajectory of the moon compared to earth for symplectic Euler algorithm
+    trajectory_moon_earth = calc_moon_to_earth(
+        run(x.copy(), v.copy(), 10e-2, 20, m, g, step_symplectic_euler))
+    plt.plot(
+        trajectory_moon_earth[0, :],
+        trajectory_moon_earth[1, :],
+        "-",
+        label=r"moon compared to earth"
+    )
+    plt.xlabel(r"$x$ in au")
+    plt.ylabel(r"$y$ in au")
+    plt.legend(loc="lower right")
+    plt.savefig(plot_path/"Exc1_Plot_3_2_part1.png")
+    plt.clf()
 
-    # Trajectories plot
-    for i in range(np.shape(trajectories)[1]):
+    # Trajectory of the moon compared to earth for velocity Verlet algorithm
+    trajectory_moon_earth = calc_moon_to_earth(
+        run(x, v, 10e-2, 20, m, g, step_velocity_verlet))
+    plt.plot(
+        trajectory_moon_earth[0, :],
+        trajectory_moon_earth[1, :],
+        "-",
+        label=r"moon compared to earth"
+    )
+    plt.xlabel(r"$x$ in au")
+    plt.ylabel(r"$y$ in au")
+    plt.legend(loc="lower right")
+    plt.savefig(plot_path/"Exc1_Plot_3_2_part2.png")
+    plt.clf()
+
+    # Calculate trajectories of planets for ex_3_3
+    trajectories_3_3 = run(x, v, 10e-2, 8, m, g,
+                           step_symplectic_euler).transpose()
+
+    # Trajectories plot for ex_3_3
+    for i in range(np.shape(trajectories_3_3)[1]):
         plt.plot(
-            trajectories[0, i, :],
-            trajectories[1, i, :],
+            trajectories_3_3[0, i, :],
+            trajectories_3_3[1, i, :],
             "-",
             label=names[i].decode("UTF-8"),
         )
     plt.xlabel(r"$x$ in au")
     plt.ylabel(r"$y$ in au")
     plt.legend(loc="lower right")
-    plt.show()
+    plt.savefig(plot_path/"Exc1_Plot_3_3_part2.png")

@@ -5,18 +5,23 @@ import matplotlib.pyplot as plt
 
 import ex_2_1
 
+from pathlib import Path
+
 
 def force(mass, gravity, v, gamma, v_0):
     return np.array([0, -mass * gravity]) - gamma * (v - v_0)
 
 
 def run(x, v, dt, mass, gravity, gamma, v_0):
-    trajectory = [x.copy()]
+    x_new = x.copy()
+    v_new = v.copy()
+    trajectory = [x_new.copy()]
     for timestep in range(int(10e4)):
-        force_xy = force(mass, gravity, v, gamma, v_0)
-        x, v = ex_2_1.step_euler(x, v, dt, mass, gravity, force_xy)
-        if x[1] >= 0:
-            trajectory.append(x.copy())
+        force_xy = force(mass, gravity, v_new, gamma, v_0)
+        x_new, v_new = ex_2_1.step_euler(
+            x_new, v_new, dt, mass, gravity, force_xy)
+        if x_new[1] >= 0:
+            trajectory.append(x_new.copy())
         else:
             break
     return np.array(trajectory)
@@ -33,6 +38,7 @@ if __name__ == "__main__":
     trajectory_vw_0 = run(x, v, dt, mass, gravity, 0.1, np.array([0, 0]))
     trajectory_vw = run(x, v, dt, mass, gravity, 0.1, np.array([-30, 0]))
 
+    plot_path = Path(__file__).resolve().parent.parent/"plots"
     # Trajectory comparison plot
     plt.plot(trajectory_2_1[:, 0], trajectory_2_1[:, 1], '-',
              label="without friction")
@@ -43,7 +49,8 @@ if __name__ == "__main__":
     plt.xlabel(r"$x$ in m")
     plt.ylabel(r"$y$ in m")
     plt.legend(loc="upper right")
-    plt.show()
+    plt.savefig(plot_path/"Exc1_Plot_2_2_part1.png")
+    plt.clf()
 
     # Trajectory with different wind speeds in -x direction plot
     for vw in np.linspace(0, -195, num=8):
@@ -53,4 +60,4 @@ if __name__ == "__main__":
     plt.xlabel(r"$x$ in m")
     plt.ylabel(r"$y$ in m")
     plt.legend(loc="upper right")
-    plt.show()
+    plt.savefig(plot_path/"Exc1_Plot_2_2_part2.png")

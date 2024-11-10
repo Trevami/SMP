@@ -39,11 +39,13 @@ def step_euler(x, v, dt, masses, g, forces):
 
 
 def run(x, v, dt, masses, g):
-    trajectory = [x.copy()]
+    x_new = x.copy()
+    v_new = v.copy()
+    trajectory = [x_new.copy()]
     for time_step in range(int(1 / dt)):
-        force_mat = forces(x, masses, g)
-        x, v = step_euler(x, v, dt, masses, g, force_mat)
-        trajectory.append(x.copy())
+        force_mat = forces(x_new, masses, g)
+        x_new, v_new = step_euler(x_new, v_new, dt, masses, g, force_mat)
+        trajectory.append(x_new.copy())
     return np.array(trajectory)
 
 
@@ -62,17 +64,33 @@ if __name__ == "__main__":
     v = np.array(v_init).transpose()
 
     # Calculate trajectories of planets
-    trajectories = run(x, v, 10e-5, m, g).transpose()
+    trajectories_4dig = run(x, v, 10e-4, m, g).transpose()
+    trajectories_5dig = run(x, v, 10e-5, m, g).transpose()
 
-    # Trajectories plot
-    for i in range(np.shape(trajectories)[1]):
+    plot_path = Path(__file__).resolve().parent.parent/"plots"
+    # Trajectories plot dt=10e-4
+    for i in range(np.shape(trajectories_4dig)[1]):
         plt.plot(
-            trajectories[0, i, :],
-            trajectories[1, i, :],
+            trajectories_4dig[0, i, :],
+            trajectories_4dig[1, i, :],
             "-",
             label=names[i].decode("UTF-8"),
         )
     plt.xlabel(r"$x$ in au")
     plt.ylabel(r"$y$ in au")
     plt.legend(loc="lower right")
-    plt.show()
+    plt.savefig(plot_path/"Exc1_Plot_3_1_part1.png")
+    plt.clf()
+
+    # Trajectories plot dt=10e-5
+    for i in range(np.shape(trajectories_5dig)[1]):
+        plt.plot(
+            trajectories_5dig[0, i, :],
+            trajectories_5dig[1, i, :],
+            "-",
+            label=names[i].decode("UTF-8"),
+        )
+    plt.xlabel(r"$x$ in au")
+    plt.ylabel(r"$y$ in au")
+    plt.legend(loc="lower right")
+    plt.savefig(plot_path/"Exc1_Plot_3_1_part2.png")
