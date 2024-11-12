@@ -3,6 +3,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from pathlib import Path
+
 
 def force(mass, gravity):
     return np.array([0, -mass * gravity])
@@ -34,7 +36,8 @@ if __name__ == "__main__":
 
     trajectory = run(x, v, dt, mass, gravity)
 
+    plot_path = Path(__file__).resolve().parent.parent/"plots"
     plt.plot(trajectory[:, 0], trajectory[:, 1], '-')
     plt.xlabel(r"$x$ in m")
     plt.ylabel(r"$y$ in m")
-    plt.show()
+    plt.savefig(plot_path/"Exc1_Plot_2_1.png")

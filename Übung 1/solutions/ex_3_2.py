@@ -2,7 +2,9 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+
 from pathlib import Path
+
 import ex_3_1
 
 
@@ -40,13 +42,25 @@ def step_velocity_verlet(x, v, dt, masses, g, forces_old):
 
 
 def run(x, v, dt, duration, masses, g, step_method):
-    # Duration and time step is specified in years
-    trajectory = [x.copy()]
+    # Duration and time step are specified in years
+    x_new = x.copy()
+    v_new = v.copy()
+    trajectory = [x_new.copy()]
     for timestep in range(int(duration / (dt))):
-        force_mat = ex_3_1.forces(x, masses, g)
-        x, v = step_method(x, v, dt, masses, g, force_mat)
-        trajectory.append(x.copy())
+        force_mat = ex_3_1.forces(x_new, masses, g)
+        x_new, v_new = step_method(x_new, v_new, dt, masses, g, force_mat)
+        trajectory.append(x_new.copy())
     return np.array(trajectory)
+
+
+def calc_moon_to_earth(trajectories):
+    # Calculates the trajectory of the moon compared to earth
+    trat_moon_to_earth = []
+    for timestep in range(np.shape(trajectories)[2]):
+        trat_moon_to_earth.append(
+            trajectories[:, 2, timestep] - trajectories[:, 1, timestep]
+        )
+    return np.array(trat_moon_to_earth)
 
 
 if __name__ == "__main__":
@@ -88,4 +102,4 @@ if __name__ == "__main__":
     plt.xlabel(r"$x$ in au")
     plt.ylabel(r"$y$ in au")
     plt.legend(loc="lower right")
-    plt.show()
+    plt.savefig(plot_path / "Exc1_Plot_3_3_part2.png")
