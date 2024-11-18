@@ -62,11 +62,11 @@ if __name__ == "__main__":
     v = np.array(v_init).transpose()
 
     # Calculate trajectories of planets
-    trajectories_4dig = run(x, v, 10e-4, m, g).transpose()
-    trajectories_5dig = run(x, v, 10e-5, m, g).transpose()
+    trajectories_4dig = run(x, v, 1e-4, m, g).transpose()
+    trajectories_5dig = run(x, v, 1e-5, m, g).transpose()
 
     plot_path = Path(__file__).resolve().parent.parent/"plots"
-    # Trajectories plot dt=10e-4
+    # Trajectories plot dt=1e-4
     for i in range(np.shape(trajectories_4dig)[1]):
         plt.plot(
             trajectories_4dig[0, i, :],
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     plt.savefig(plot_path/"Exc1_Plot_3_1_part1.png")
     plt.clf()
 
-    # Trajectories plot dt=10e-5
+    # Trajectories plot dt=1e-5
     for i in range(np.shape(trajectories_5dig)[1]):
         plt.plot(
             trajectories_5dig[0, i, :],

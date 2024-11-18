@@ -16,7 +16,7 @@ def run(x, v, dt, mass, gravity, gamma, v_0):
     x_new = x.copy()
     v_new = v.copy()
     trajectory = [x_new.copy()]
-    for timestep in range(int(10e4)):
+    for timestep in range(int(1e4)):
         force_xy = force(mass, gravity, v_new, gamma, v_0)
         x_new, v_new = ex_2_1.step_euler(
             x_new, v_new, dt, mass, gravity, force_xy)

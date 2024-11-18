@@ -18,7 +18,7 @@ def step_euler(x, v, dt, mass, gravity, f):
 
 def run(x, v, dt, mass, gravity):
     trajectory = [x.copy()]
-    for timestep in range(int(10e4)):
+    for timestep in range(int(1e4)):
         x, v = step_euler(x, v, dt, mass, gravity, force(mass, gravity))
         if x[1] >= 0:
             trajectory.append(x.copy())
