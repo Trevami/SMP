@@ -27,7 +27,7 @@ def forces(x: np.ndarray, r_cut: float, box=(15, 15)) -> np.ndarray:
     return f
 
 
-def total_energy(x: np.ndarray, v: np.ndarray, r_cut: float, box=(15, 15)) -> np.ndarray:
+def total_energy(x: np.ndarray, v: np.ndarray, r_cut: float, shift=None, box=(15, 15)) -> np.ndarray:
     """Compute and return the total energy of the system with the
     particles at positions x and velocities v."""
     N = x.shape[1]
@@ -43,11 +43,15 @@ def total_energy(x: np.ndarray, v: np.ndarray, r_cut: float, box=(15, 15)) -> np
             r_ij -= pbc_box * np.round(r_ij / pbc_box)
             # apply cutoff for LJ-potential:
             if np.linalg.norm(r_ij) < r_cut:
-                # create dummy vector for LJ-potential shifting
-                dummy_vec = np.array([0, r_cut])
-                # calculate and shift the LJ-potential to be continous at cutoff
-                E_pot += ex_3_2.lj_potential(r_ij) - \
-                    ex_3_2.lj_potential(dummy_vec)
+                E_pot += ex_3_2.lj_potential(r_ij)
+                if shift == None:
+                    # create dummy vector for LJ-potential shifting
+                    dummy_vec = np.array([0, r_cut])
+                    # calculate and shift the LJ-potential to be continous at cutoff
+                    E_pot -= ex_3_2.lj_potential(dummy_vec)
+                elif shift:
+                    E_pot += shift
+
     # sum up kinetic energy
     for i in range(N):
         E_kin += 0.5 * np.dot(v[:, i], v[:, i])
