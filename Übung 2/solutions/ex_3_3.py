@@ -54,6 +54,19 @@ def step_vv(x: np.ndarray, v: np.ndarray, f: np.ndarray, dt: float):
     return x, v, f
 
 
+def apply_bounce_back(x:np.ndarray, v:np.ndarray, box_cent_pos=(0, 0), box_l=15):
+    # invert x-component if particle leaves boundaries of the box in x:
+    x_idx_left_out  = np.where(x[0, :] <= box_cent_pos[0] - box_l / 2)
+    x_idx_right_out = np.where(x[0, :] >= box_cent_pos[0] + box_l / 2)
+    v[0, x_idx_left_out]  = -v[0, x_idx_left_out]
+    v[0, x_idx_right_out] = -v[0, x_idx_right_out]
+    # invert y-component if particle leaves boundaries of the box in y:
+    y_idx_left_out  = np.where(x[1, :] <= box_cent_pos[1] - box_l / 2)
+    y_idx_right_out = np.where(x[1, :] >= box_cent_pos[1] + box_l / 2)
+    v[1, y_idx_left_out]  = -v[1, y_idx_left_out]
+    v[1, y_idx_right_out] = -v[1, y_idx_right_out]
+
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     DT = 0.01
@@ -94,6 +107,7 @@ if __name__ == "__main__":
         vtffile.write(f'atom 0:{N_PART - 1} radius 0.5\n')
         for i in range(N_TIME_STEPS):
             x, v, f = step_vv(x, v, f, DT)
+            apply_bounce_back(x, v, (7.4, 0), box_l=15)
             time += DT
 
             positions[i, :2] = x
