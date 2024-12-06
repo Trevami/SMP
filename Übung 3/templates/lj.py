@@ -11,7 +11,7 @@ class Simulation:
         self.shift = shift
 
         self.n_dims = self.x.shape[0]
-        self.n = self.x.shape[1]
+        self.n = self.x.shape[1] # number of particles
         self.f = np.zeros_like(x)
 
         # both r_ij_matrix and f_ij_matrix are computed in self.forces()
@@ -62,9 +62,11 @@ class Simulation:
 
     def pressure(self):
         #TODO
+        pass
 
     def rdf(self):
         #TODO
+        pass
 
     def propagate(self):
         # update positions
@@ -150,12 +152,24 @@ if __name__ == "__main__":
         with open(args.cpt, 'rb') as fp:
             data = pickle.load(fp)
 
+    # Create simulation onject
     sim = Simulation(DT, x, v, BOX, R_CUT, SHIFT)
 
+    # Load data from picle file
     # If checkpoint is used, also the forces have to be reloaded!
     if args.cpt and os.path.exists(args.cpt):
-        sim.f = f
+        # load from file for checkpoint
+        sim.x = data['last_positions']
+        sim.v = data['last_velocities']
+        sim.f = data['last_forces']
+        # load from file for appending observables data
+        positions = data['positions']
+        energies = data['energies']
+        pressures = data['pressures']
+        temperatures = data['temperatures']
+        rdfs = data['rdfs']
 
+    # Perform simulation
     for i in tqdm.tqdm(range(N_TIME_STEPS)):
         sim.propagate()
 
@@ -166,6 +180,16 @@ if __name__ == "__main__":
             temperatures.append(sim.temperature())
             rdfs.append(sim.rdf())
 
+    # Save data to plikcle file
     if args.cpt:
-        state = {'energies': energies}
+        state = {
+            'last_positions' : sim.x,
+            'last_velocities' : sim.v,
+            'last_forces' : sim.f,
+            'positions' : positions,
+            'energies': energies,
+            'pressures' : pressures,
+            'temperatures' : temperatures,
+            'rdfs' : rdfs
+        }
         write_checkpoint(state, args.cpt, overwrite=True)
