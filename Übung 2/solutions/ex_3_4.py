@@ -5,6 +5,12 @@ import numpy as np
 import ex_3_2
 
 
+def lj_force(r_ij, r_cut):
+    if np.linalg.norm(r_ij) < r_cut:
+        return ex_3_2.lj_force(r_ij)
+    else: return np.zeros_like(r_ij)
+
+
 def forces(x: np.ndarray, r_cut: float, box=(15, 15)) -> np.ndarray:
     """Compute and return the forces acting onto the particles,
     depending on the positions x."""
@@ -14,17 +20,26 @@ def forces(x: np.ndarray, r_cut: float, box=(15, 15)) -> np.ndarray:
     for i in range(1, N):
         for j in range(i):
             # distance vector
-            r_ij = x[:, j] - x[:, i]
-            # apply PCB:
-            # For each k, adjust the distance r_ij,k​ so that it
-            # is the shortest distance between particles i and j
-            r_ij -= pbc_box * np.round(r_ij / pbc_box)
+            r_ij = minimum_image_vector(x[:, j], x[:, i], pbc_box)
             # apply cutoff for LJ-potential forces:
-            if np.linalg.norm(r_ij) < r_cut:
-                f_ij = ex_3_2.lj_force(r_ij)
-                f[:, i] -= f_ij
-                f[:, j] += f_ij
+            f_ij = lj_force(r_ij, r_cut)
+            f[:, i] -= f_ij
+            f[:, j] += f_ij
     return f
+
+
+def lj_potential(r_ij, r_cut, shift):
+    E_pot = 0.0
+    if np.linalg.norm(r_ij) < r_cut:
+        E_pot = ex_3_2.lj_potential(r_ij)
+        if shift == None:
+            # create dummy vector for LJ-potential shifting
+            dummy_vec = np.array([0, r_cut])
+            # calculate and shift the LJ-potential to be continous at cutoff
+            E_pot -= ex_3_2.lj_potential(dummy_vec)
+        elif shift:
+            E_pot += shift
+    return E_pot
 
 
 def total_energy(x: np.ndarray, v: np.ndarray, r_cut: float, shift=None, box=(15, 15)) -> np.ndarray:
@@ -38,24 +53,23 @@ def total_energy(x: np.ndarray, v: np.ndarray, r_cut: float, shift=None, box=(15
     for i in range(1, N):
         for j in range(i):
             # distance vector
-            r_ij = x[:, j] - x[:, i]
-            # apply PCB:
-            r_ij -= pbc_box * np.round(r_ij / pbc_box)
+            r_ij = minimum_image_vector(x[:, j], x[:, i], pbc_box)
             # apply cutoff for LJ-potential:
-            if np.linalg.norm(r_ij) < r_cut:
-                E_pot += ex_3_2.lj_potential(r_ij)
-                if shift == None:
-                    # create dummy vector for LJ-potential shifting
-                    dummy_vec = np.array([0, r_cut])
-                    # calculate and shift the LJ-potential to be continous at cutoff
-                    E_pot -= ex_3_2.lj_potential(dummy_vec)
-                elif shift:
-                    E_pot += shift
+            E_pot += lj_potential(r_ij, r_cut, shift)
 
     # sum up kinetic energy
     for i in range(N):
         E_kin += 0.5 * np.dot(v[:, i], v[:, i])
     return E_pot + E_kin
+
+
+def minimum_image_vector(xj, xi, pbc_box):
+    r_ij = xj - xi
+    # apply PCB:
+    # For each k, adjust the distance r_ij,k​ so that it
+    # is the shortest distance between particles i and j
+    r_ij -= pbc_box * np.round(r_ij / pbc_box)
+    return r_ij
 
 
 def step_vv(x: np.ndarray, v: np.ndarray, f: np.ndarray, dt: float, r_cut: float, box=(15, 15)):
@@ -90,6 +104,7 @@ def apply_bounce_back(x: np.ndarray, v: np.ndarray, box_cent_pos=(0, 0), box_l=1
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
+    from pathlib import Path
     DT = 0.01
     T_MAX = 20.0
     N_TIME_STEPS = int(T_MAX / DT)
@@ -132,7 +147,7 @@ if __name__ == "__main__":
                 x = np.array([r % np.array(PBC_BOX) for r in x.T]).T
 
             positions[i, :2] = x
-            energies[i] = total_energy(x, v, R_CUT, PBC_BOX)
+            energies[i] = total_energy(x, v, R_CUT, None, PBC_BOX)
 
             # write out that a new timestep starts
             vtffile.write('timestep\n')
@@ -142,6 +157,7 @@ if __name__ == "__main__":
 
     traj = np.array(positions)
 
+    plot_path = Path(__file__).resolve().parent.parent/"plots"
     fig, (ax1, ax2) = plt.subplots(2, 1)
     for i in range(N_PART):
         ax1.plot(positions[:, 0, i], positions[:, 1, i], label='{}'.format(i))
@@ -155,4 +171,5 @@ if __name__ == "__main__":
     ax2.set_ylabel("Total energy")
     ax2.plot(energies)
     ax2.set_title('Total energy')
+    plt.savefig(plot_path/"ex_3_4_plot_1.png")
     plt.show()

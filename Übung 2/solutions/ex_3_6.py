@@ -18,8 +18,8 @@ def forces(x: np.ndarray, r_cut: float, box: np.ndarray, verlet_list: np.ndarray
             # distance vector
             r_ij = ex_3_4.minimum_image_vector(x[:, pair[0]], x[:, pair[1]], box) 
             f_ij = ex_3_4.lj_force(r_ij, r_cut)
-            f[:, pair[0]] -= f_ij
-            f[:, pair[1]] += f_ij
+            f[:, pair[1]] -= f_ij
+            f[:, pair[0]] += f_ij
     return f
 
 
@@ -39,7 +39,7 @@ def total_energy(x: np.ndarray, v: np.ndarray, r_cut: float, shift: float, box: 
         E_kin += 0.5 * np.dot(v[:, i], v[:, i])
     return E_pot + E_kin
 
-def get_verlet_list(x: np.ndarray, r_cut: float, skin: float, box: np.ndarray) -> (np.ndarray, np.ndarray):
+def get_verlet_list(x: np.ndarray, r_cut: float, skin: float, box: np.ndarray): # -> (np.ndarray, np.ndarray):
     """
     Create a list of interaction partners.
 
@@ -47,8 +47,13 @@ def get_verlet_list(x: np.ndarray, r_cut: float, skin: float, box: np.ndarray) -
     N = x.shape[1]
     verlet_list = []
 
-    # TODO: YOUR IMPLEMENTATION OF VERLET LISTS GOES HERE...
-
+    for i in range(1, N):
+        for j in range(i):
+            # distance vector
+            r_ij = ex_3_4.minimum_image_vector(x[:, j], x[:, i], box)
+            if np.linalg.norm(r_ij, axis=0) < (r_cut + skin):
+                verlet_list.append((j, i))
+                
     return np.copy(x), np.array(verlet_list)
 
 def step_vv(x: np.ndarray, v: np.ndarray, f: np.ndarray, dt: float, r_cut: float, skin: float, box: np.ndarray, x0: np.ndarray, verlet_list: np.ndarray):
@@ -82,11 +87,13 @@ if __name__ == "__main__":
         'N_per_side',
         type=int,
         nargs=1,
+        default=2,
         help='Number of particles per lattice side.')
     parser.add_argument(
         'skin',
         type=float,
         nargs=1,
+        default=0.0,
         help='Skin for Verlet lists.')
     args = parser.parse_args()
 
