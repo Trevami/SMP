@@ -29,7 +29,6 @@ def forces(x: np.ndarray, r_cut: float, box=(15, 15)) -> np.ndarray:
 
 
 def lj_potential(r_ij, r_cut, shift):
-    E_pot = 0.0
     if np.linalg.norm(r_ij) < r_cut:
         E_pot = ex_3_2.lj_potential(r_ij)
         if shift == None:

@@ -33,6 +33,8 @@ class Simulation:
     def energies(self):
         r = np.linalg.norm(self.r_ij_matrix, axis=2)
         with np.errstate(all='ignore'):
+            # e_pot_ij_matrix is a N x N matrix with interaction energies
+            # i is the row index and j is the column index
             self.e_pot_ij_matrix = np.where((r != 0.0) & (r < self.r_cut),
                                             4.0 * (np.power(r, -12.) - np.power(r, -6.)) + self.shift, 0.0)
 
@@ -53,16 +55,41 @@ class Simulation:
         """Compute and return the energy components of the system."""
         # compute energy matrix
         self.energies()
-        # TODO compute interaction energy from self.e_pot_ij_matrix
-        # TODO calculate kinetic energy from the velocities self.v and return both energy components
+
+        # compute interaction energy from self.e_pot_ij_matrix
+        N = self.x.shape[1]
+        E_pot = 0.0
+        for i in range(1, N):
+            for j in range(i):
+                E_pot += self.e_pot_ij_matrix[i, j]
+
+        # calculate kinetic energy from the velocities self.v
+        E_kin = self.kin_energy()
+
+        # return both energy components
+        return E_pot, E_kin
+    
+    def kin_energy(self):
+        N = self.x.shape[1]
+        E_kin = 0.0
+        for i in range(N):
+            E_kin += 0.5 * np.dot(self.v[:, i], self.v[:, i])
+        return E_kin
 
     def temperature(self):
-        #TODO
-        pass
+        # Temerature in multiples of k_B
+        E_kin = self.kin_energy()
+        N = self.x.shape[1]
+        return 2/3 * E_kin / N
 
     def pressure(self):
-        #TODO
-        pass
+        E_kin = self.kin_energy()
+        N = self.x.shape[1]
+        E_force = 0.0
+        for i in range(1, N):
+            for j in range(i):
+                E_force += np.dot(self.f_ij_matrix[i, j], self.r_ij_matrix[i, j])
+        return 1/(2 * self.box[0] * self.box[1]) * (E_kin + E_force) # pressure calculation
 
     def rdf(self):
         #TODO
@@ -118,7 +145,8 @@ if __name__ == "__main__":
     np.random.seed(2)
 
     DT = 0.01
-    T_MAX = 100.0
+    T_MAX = 10.0
+    # T_MAX = 0.1
     N_TIME_STEPS = int(T_MAX / DT)
 
     R_CUT = 2.5
@@ -183,6 +211,7 @@ if __name__ == "__main__":
     # Save data to plikcle file
     if args.cpt:
         state = {
+            'delta_time' : DT,
             'last_positions' : sim.x,
             'last_velocities' : sim.v,
             'last_forces' : sim.f,
