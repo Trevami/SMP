@@ -49,28 +49,28 @@ def step_vv_langevin(x, v, f, dt, gamma, T):
     w = np.zeros_like(f)
     a = mean - np.sqrt(3) * sigma  # Lower bound for uniform distribution
     b = mean + np.sqrt(3) * sigma  # Upper bound for uniform distribution
-    w = np.random.uniform(a, b, size=f.shape)
+    for i in range(np.shape(f)[0]):
+        w[i, :] = np.random.uniform(a, b, size=np.shape(f)[1])
 
     # Calculate the total force
-    g = f + w # scale force by random norm. dist. number
+    f += w # scale force by random norm. dist. number
 
     # Transform velocity for Langevin thermostat (LT)
     v *= (1 - dt * gamma / 2)
 
     # Update position
-    x += v * dt + 0.5 * g * dt**2
+    x += v * dt + 0.5 * f * dt**2
 
     # Half update of velocity
-    v /= (1 + dt * gamma / 2)
-    v += 0.5 * g * dt / (1 + dt * gamma / 2)
+    b = (1 + dt * gamma / 2) # LT velocity update denominator
+    v /= b 
+    v += 0.5 * f * dt / b
 
     # Update force
     f = np.zeros_like(f)
-    w = np.random.uniform(a, b, size=f.shape)
-    g = f + w
 
     # Second half update of velocity
-    v += 0.5 * g * dt / (1 + dt * gamma / 2)
+    v += 0.5 * f * dt / b
 
     return x, v, f
     
@@ -96,14 +96,15 @@ def compute_instaneous_temperature(v) -> float:
     Returns:
         float: temperature
     """
-    N = v.shape[0]
+    N = v.shape[1]
+
     # calculate E_kin
     E_kin = 0.0
     for i in range(N):
-        E_kin += 0.5 * np.dot(v[i, :], v[i, :])
+        E_kin += 0.5 * np.dot(v[:, i], v[:, i])
 
     # return temperature
-    return 2/3 * E_kin / N
+    return 2 * E_kin / (3 * N)
 
 if __name__ == "__main__":
     # System parameters
