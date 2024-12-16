@@ -108,7 +108,7 @@ while t < TIME_MAX:
         vels.append(copy.copy(v))
         traj.append(copy.copy(x))
 
-        print(f"t={t}, E={E}, T_m={Tm}")
+        # print(f"t={t}, E={E}, T_m={Tm}")
         abs_vels.append(np.linalg.norm(v, axis=1))
         ts.append(t)
         Es.append(E)
